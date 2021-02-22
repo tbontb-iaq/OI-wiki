@@ -223,74 +223,68 @@ c = read<__int128>();
 若要开启文件读写时，请在所有读写之前加入 `freopen()`。
 
 ```cpp
-// #define DEBUG 1  // 调试开关
-struct IO {
+// #define DEBUG  // 调试开关
+struct quick_IO {
 #define MAXSIZE (1 << 20)
-#define isdigit(x) (x >= '0' && x <= '9')
-  char buf[MAXSIZE], *p1, *p2;
-  char pbuf[MAXSIZE], *pp;
-#if DEBUG
-#else
-  IO() : p1(buf), p2(buf), pp(pbuf) {}
-  ~IO() { fwrite(pbuf, 1, pp - pbuf, stdout); }
+#define isdigit(ch) ((ch) >= '0' && (ch) <= '9')
+#define isblank(ch) ((ch) == ' ' || (ch) == '\n' || (ch) == '\r' || (ch) == '\t')
+#ifndef DEBUG
+	char inBuf[MAXSIZE], *pIn_1 = inBuf, *pIn_2 = inBuf, outBuf[MAXSIZE], *pOut = outBuf;
+	~quick_IO()
+	{
+		fwrite(outBuf, sizeof(char), pOut - outBuf, stdout);
+	}  // 析构函数
+	inline char getchar()
+	{
+		if (pIn_1 == pIn_2) pIn_2 = (pIn_1 = inBuf) + fread(inBuf, 1, MAXSIZE, stdin);
+		return pIn_1 == pIn_2 ? EOF : *pIn_1++;
+	}
+	inline void putchar(const char& ch)
+	{
+		if (pOut - outBuf == MAXSIZE) fwrite(outBuf, 1, MAXSIZE, stdout), pOut = outBuf;
+		*pOut++ = ch;
+	}
 #endif
-  inline char gc() {
-#if DEBUG  // 调试，可显示字符
-    return getchar();
-#endif
-    if (p1 == p2) p2 = (p1 = buf) + fread(buf, 1, MAXSIZE, stdin);
-    return p1 == p2 ? ' ' : *p1++;
-  }
-  inline bool blank(char ch) {
-    return ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t';
-  }
-  template <class T>
-  inline void read(T &x) {
-    register double tmp = 1;
-    register bool sign = 0;
-    x = 0;
-    register char ch = gc();
-    for (; !isdigit(ch); ch = gc())
-      if (ch == '-') sign = 1;
-    for (; isdigit(ch); ch = gc()) x = x * 10 + (ch - '0');
-    if (ch == '.')
-      for (ch = gc(); isdigit(ch); ch = gc())
-        tmp /= 10.0, x += tmp * (ch - '0');
-    if (sign) x = -x;
-  }
-  inline void read(char *s) {
-    register char ch = gc();
-    for (; blank(ch); ch = gc())
-      ;
-    for (; !blank(ch); ch = gc()) *s++ = ch;
-    *s = 0;
-  }
-  inline void read(char &c) {
-    for (c = gc(); blank(c); c = gc())
-      ;
-  }
-  inline void push(const char &c) {
-#if DEBUG  // 调试，可显示字符
-    putchar(c);
-#else
-    if (pp - pbuf == MAXSIZE) fwrite(pbuf, 1, MAXSIZE, stdout), pp = pbuf;
-    *pp++ = c;
-#endif
-  }
-  template <class T>
-  inline void write(T x) {
-    if (x < 0) x = -x, push('-');  // 负数输出
-    static T sta[35];
-    T top = 0;
-    do {
-      sta[top++] = x % 10, x /= 10;
-    } while (x);
-    while (top) push(sta[--top] + '0');
-  }
-  template <class T>
-  inline void write(T x, char lastChar) {
-    write(x), push(lastChar);
-  }
+	template < class Tp >
+	inline void read(Tp& num)
+	{
+		num					 = 0;
+		register double tmp	 = 1;
+		register bool	sign = 0;
+		register char	ch	 = getchar();
+		for (; !isdigit(ch); ch = getchar())
+			if (ch == '-') sign = 1;
+		for (; isdigit(ch); ch = getchar()) num = num * 10 + (ch - '0');
+		if (ch == '.')
+			for (ch = getchar(); isdigit(ch); ch = getchar())
+				tmp /= 10.0, num += tmp * (ch - '0');
+		if (sign) num = -num;
+	}
+	inline void read(char& ch)
+	{
+		for (ch = getchar(); isblank(ch); ch = getchar())
+			;
+	}
+	inline void read(char* str)
+	{
+		register char ch = getchar();
+		for (; isblank(ch); ch = getchar())
+			;
+		for (; !isblank(ch); ch = getchar()) *str++ = ch;
+		*str = '\0';
+	}
+	template < class Tp >
+	inline void write(Tp num, char endwith = '\0')
+	{
+		if (num < 0) num = -num, putchar('-');	// 负数输出
+		static Tp sta[35];
+		Tp		  top = 0;
+		do {
+			sta[top++] = num % 10, num /= 10;
+		} while (num);
+		while (top) putchar(sta[--top] + '0');
+		if (endwith) putchar(endwith);
+	}
 } io;
 ```
 
